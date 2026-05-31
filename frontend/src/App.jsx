@@ -5,25 +5,31 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Applications from './pages/Applications'
-
+import { TooltipProvider } from "@/components/ui/tooltip";
+import AppLayout from "./components/layout/AppLayout";
 
 function App() {
 
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path='/login' element={<Login />}/>
-          <Route path='/register' element={<Register />}/>
-          <Route path='/dashboard' element={< ProtectedRoute><Dashboard /></ProtectedRoute>}/>
-          <Route path='/applications' element={< ProtectedRoute><Applications /></ProtectedRoute>}/>
-          <Route path='/' element={<Navigate to="/dashboard" replace/>}/>
+        <TooltipProvider>
+          <Routes>
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/applications" element={<Applications />} />
+              </Route>
+            </Route>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-        </Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </TooltipProvider>
       </AuthProvider>
     </BrowserRouter>
-
-  )
+  );
 }
 
 export default App

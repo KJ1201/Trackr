@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models.functions import ExtractYear, ExtractWeek
 
 # Create your views here.
 class ApplicationViewSet(ModelViewSet):
@@ -38,7 +39,7 @@ class DashboardStatsView(APIView):
         by_status = applications.values('status').annotate(count=Count('id'))
         eight_weeks_ago = timezone.now().date() - timedelta(weeks=8)
         recent = applications.filter(applied_date__gte=eight_weeks_ago)
-        by_week = (recent.values('applied_date__week', 'applied_date__year').annotate(count=Count('id')).order_by('applied_date__year', 'applied_date__week'))
+        by_week = (recent.values(week=ExtractWeek('applied_date'), year=ExtractYear('applied_date')).annotate(count=Count('id')).order_by('year', 'week'))
 
         return Response({
             'total': applications.count(), 
