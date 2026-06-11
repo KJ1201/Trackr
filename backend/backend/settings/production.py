@@ -1,5 +1,6 @@
 from .base import *
 from decouple import config
+import dj_database_url
 
 DEBUG = False
 
@@ -7,12 +8,7 @@ ALLOWED_HOSTS = [config('ALLOWED_HOSTS')]
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('NAME'),
-        'USER': config('USER'),
-        'PASSWORD': config('PASSWORD'),
-        'HOST': config('HOST'),
-        "PORT": config('PORT')
+        'default': dj_database_url.config(conn_max_age=600)
     }
 }
 
