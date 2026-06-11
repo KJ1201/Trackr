@@ -18,13 +18,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/authContext";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 function AuthCard({ name }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
-  const [error, setError] = useState("");
+  // const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -33,35 +34,33 @@ function AuthCard({ name }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (name === "register") {
-      if (!username || !email || !password || !password2) {
-        setError("All fields are required.");
-        return;
-      }
-
-      if (password !== password2) {
-        setError("Passwords do not match.");
-        return;
-      }
-    }
+    // if (name === "register" && password !== password2) {
+    //   // setError("Passwords do not match.");
+    //   toast.error("Passwords do not match.");
+    //   return;
+    // }
 
     setLoading(true);
     try {
       if (name === "register") {
         await register({ username, email, password, password2 });
         navigate("/login");
+        toast.success("Account Created Successfully");
       }
       if (name === "login") {
         await login({ username, password });
         navigate("/dashboard");
+        toast.success("Logged In Successful");
       }
     } catch (err) {
       const data = err.response?.data;
       if (data) {
         const messages = Object.values(data).flat().join(" ");
-        setError(messages);
+        // setError(messages);
+        toast.error(messages);
       } else {
-        setError("Something went wrong. Please try again.");
+        // setError("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -142,8 +141,8 @@ function AuthCard({ name }) {
                     <Input
                       id="password2"
                       type="password"
-                      required
                       placeholder="Confirm Password"
+                      required
                       value={password2}
                       onChange={(e) => setPassword2(e.target.value)}
                     />
@@ -151,9 +150,12 @@ function AuthCard({ name }) {
                 ) : null}
 
                 <Field>
-                  {error && <p style={{ color: "red" }}>{error}</p>}
                   <Button type="submit" disabled={loading}>
-                    {loading ? <Loader2 className="animate-spin"/> : (name.toUpperCase())}
+                    {loading ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      name.toUpperCase()
+                    )}
                   </Button>
                   {/* <Button variant="outline" type="button">
                     Login with Google

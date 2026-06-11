@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
 import { getDashboardStats } from "../services/applicationService";
 import useAPI from "./useAPI";
 
 function useDashboard() {
-    const {data, loading, error} = useAPI(getDashboardStats);
+    const {data, loading, error} = useAPI(getDashboardStats, true);
     
     return {stats: data || null, loading, error}
 }

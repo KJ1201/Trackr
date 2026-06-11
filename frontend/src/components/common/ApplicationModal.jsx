@@ -3,27 +3,57 @@ import {
   createApplication,
   updateApplication,
 } from "../../services/applicationService";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Button } from "../ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { toast } from "sonner";
+import useAPI from "@/hooks/useAPI";
 
 function ApplicationModal({ isOpen, onClose, onSuccess, application }) {
   const [role, setRole] = useState("");
   const [company, setCompany] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("applied");
   const [priority, setPriority] = useState("");
   const [appliedDate, setAppliedDate] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  const { refetch: create } = useAPI(createApplication, false);
+  const { refetch: update } = useAPI(updateApplication, false);
 
   useEffect(() => {
     if (application) {
       setRole(application.name || "");
       setCompany(application.company || "");
-      setStatus(application.status || "");
+      setStatus(application.status || "applied");
       setPriority(application.priority || "");
       setAppliedDate(application.applied_date || "");
     } else {
       setRole("");
       setCompany("");
-      setStatus("");
+      setStatus("applied");
       setPriority("");
       setAppliedDate("");
     }
@@ -31,37 +61,36 @@ function ApplicationModal({ isOpen, onClose, onSuccess, application }) {
 
   const isEditing = !!application;
 
-  if (!isOpen) return null;
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!role || !company || !priority || !appliedDate) {
+      toast.error("All fields are required.");
+      return;
+    }
+
     setLoading(true);
     try {
       if (isEditing) {
-        await updateApplication(application.id, {
+        await update(application.id, {
           name: role,
           company,
           status,
           priority,
-          applied_date: appliedDate,
+          applied_date: format(appliedDate, "yyyy-MM-dd"),
         });
+        toast.success("Application Updated");
+        onSuccess();
       } else {
-        await createApplication({
+        await create({
           name: role,
           company,
           status,
           priority,
-          applied_date: appliedDate,
+          applied_date: format(appliedDate, "yyyy-MM-dd"),
         });
-      }
-      onSuccess();
-    } catch (err) {
-      const data = err.response?.data;
-      if (data) {
-        const messages = Object.values(data).flat().join(" ");
-        setError(messages);
-      } else {
-        setError("Something went wrong.");
+        toast.success("Application Created");
+        onSuccess();
       }
     } finally {
       setLoading(false);
@@ -69,69 +98,90 @@ function ApplicationModal({ isOpen, onClose, onSuccess, application }) {
   };
 
   return (
-    <div>
-      <br />
-      <h2>{isEditing ? "Edit Application" : "New Application"}</h2>
-      <button type="button" onClick={onClose}>
-        Cancel
-      </button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form action="" onSubmit={handleSubmit}>
-        <label htmlFor="role">Role</label>
-        <input
-          className="border text-black"
-          type="text"
-          name="role"
-          id="role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        />
-        <br />
-        <label htmlFor="company">Company</label>
-        <input
-          className="border text-black"
-          type="text"
-          name="company"
-          id="company"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-        />
-        <br />
-        {/* <label htmlFor="status">Status</label>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">Select status</option>
-          <option value="applied">Applied</option>
-          <option value="pending">Pending</option>
-          <option value="interview">Interview</option>
-          <option value="offer">Offer</option>
-          <option value="rejected">Rejected</option>
-          <option value="withdrawn">Withdrawn</option>
-        </select>
-        <br /> */}
-        <label htmlFor="priority">Priority</label>
-        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-          <option value="">Select priority</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-        <br />
-        <label htmlFor="applied-date">Applied Date</label>
-        <input
-          className="border text-black"
-          type="date"
-          name="applied-date"
-          id="applied-date"
-          value={appliedDate}
-          onChange={(e) => setAppliedDate(e.target.value)}
-        />
-        <br />
-
-        <button type="submit" disabled={loading}>
-          {isEditing ? "Update" : "Create"}
-        </button>
-      </form>
-    </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {isEditing ? "Edit Application" : "New Application"}
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="role">Role</FieldLabel>
+              <Input
+                type="text"
+                name="role"
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="company">Company</FieldLabel>
+              <Input
+                type="text"
+                name="company"
+                id="company"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="priority">Priority</FieldLabel>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger className="w-45">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="applied-date">Applied Date</FieldLabel>
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    data-empty={!appliedDate}
+                    className="w-full justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
+                  >
+                    <CalendarIcon />
+                    {appliedDate ? (
+                      format(appliedDate, "PPP")
+                    ) : (
+                      <span>Pick Applied Date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={appliedDate}
+                    onSelect={(date) => {
+                      setAppliedDate(date);
+                      setCalendarOpen(false);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </Field>
+            <Field>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={loading}>
+                  {isEditing ? "Update" : "Create"}
+                </Button>
+              </div>
+            </Field>
+          </FieldGroup>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

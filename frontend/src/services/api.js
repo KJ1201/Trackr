@@ -21,8 +21,11 @@ api.interceptors.response.use(
     const original = error.config;
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
+      const refresh = localStorage.getItem(REFRESH_TOKEN);
+      if (!refresh) {
+        return Promise.reject(error);
+      }
       try {
-        const refresh = localStorage.getItem(REFRESH_TOKEN);
         const res = await axios.post(`${BASE_URL}auth/token/refresh/`, {
           refresh,
         });
@@ -32,7 +35,7 @@ api.interceptors.response.use(
       } catch (err) {
         localStorage.removeItem(ACCESS_TOKEN);
         localStorage.removeItem(REFRESH_TOKEN);
-        window.location.href = "/login/";
+        
       }
     }
     return Promise.reject(error);

@@ -7,6 +7,10 @@ import Dashboard from './pages/Dashboard'
 import Applications from './pages/Applications'
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AppLayout from "./components/layout/AppLayout";
+import { Toaster } from "sonner"
+import Kanban from "./pages/Kanban"
+import Documents from "./pages/Documents"
+import Contacts from "./pages/Contacts"
 
 function App() {
 
@@ -14,11 +18,15 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <TooltipProvider>
+          <Toaster />
           <Routes>
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/applications" element={<Applications />} />
+                <Route path="/board" element={<Kanban />} />
+                <Route path="/contacts" element={<Contacts />} />
+                <Route path="/documents" element={<Documents />} />
               </Route>
             </Route>
             <Route path="/login" element={<Login />} />

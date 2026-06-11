@@ -12,36 +12,44 @@ import {
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
 import SearchForm from "../common/searchForm";
-import { GalleryVerticalEnd, CircleUser } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  CircleUser,
+  LucideLayoutDashboard,
+  FileUser,
+  Files,
+  KanbanSquareIcon
+} from "lucide-react";
 import ThreeDotMenu from "../common/ThreeDotMenu";
 import { useAuth } from "@/context/authContext";
 
 function AppSidebar() {
   const location = useLocation();
 
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth();
 
   const sidebarItems = [
-    { title: "Dashboard", url: "/dashboard" },
-    { title: "Applications", url: "/applications" },
-    { title: "Contacts", url: "/contacts" },
-    { title: "Documents", url: "/documents" },
+    { title: "Dashboard", url: "/dashboard", icon: LucideLayoutDashboard },
+    { title: "Board", url: "/board", icon: KanbanSquareIcon },
+    { title: "Applications", url: "/applications", icon: FileUser },
+    { title: "Contacts", url: "/contacts", icon: CircleUser },
+    { title: "Documents", url: "/documents", icon: Files },
   ];
 
   const menuItems = [{ title: "Logout", menuFunc: logout }];
 
   return (
-    <Sidebar>
+    <Sidebar variant="inset">
       <SidebarHeader>
         <SidebarMenuButton
           size="lg"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <GalleryVerticalEnd className="size-4" />
+            <BriefcaseBusiness className="size-4" />
           </div>
           <div className="flex flex-col gap-0.5 leading-none">
-            <span className="font-black">Job Tracker</span>
+            <span className="text-2xl font-black">Trackr</span>
           </div>
         </SidebarMenuButton>
         <SearchForm />
@@ -54,9 +62,13 @@ function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
+                    size="lg"
                     isActive={location.pathname === item.url}
                   >
-                    <Link to={item.url}>{item.title}</Link>
+                    <Link to={item.url}>
+                      {item.icon && <item.icon className="size-5" />}
+                      {item.title}
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
