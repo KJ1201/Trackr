@@ -11,7 +11,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "react-router-dom";
-import SearchForm from "../common/searchForm";
+import SearchForm from "../common/SearchForm";
 import {
   BriefcaseBusiness,
   CircleUser,
